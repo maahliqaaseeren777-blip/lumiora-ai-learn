@@ -57,8 +57,8 @@ function Nav() {
         <div className="flex items-center gap-1 md:gap-3">
           <a href="#pricing" className="hidden md:inline text-sm text-muted-foreground hover:text-foreground">Pricing</a>
           <a href="#features" className="hidden md:inline text-sm text-muted-foreground hover:text-foreground">Features</a>
-          <a href="#login" className="text-sm px-3 py-2 text-muted-foreground hover:text-foreground">Login</a>
-          <a href="#start" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-background hover:bg-white/90">Get Started</a>
+          <a href="/auth" className="text-sm px-3 py-2 text-muted-foreground hover:text-foreground">Login</a>
+          <a href="/auth" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-background hover:bg-white/90">Get Started</a>
         </div>
       </nav>
     </header>
@@ -80,7 +80,7 @@ function Hero() {
         Generate notes, flashcards, quizzes, mind maps, summaries and personalised study plans — in seconds.
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <a href="#start" className="inline-flex items-center gap-2 rounded-full bg-grad-primary px-6 py-3 font-semibold text-white shadow-glow hover:opacity-95">
+        <a href="/auth" className="inline-flex items-center gap-2 rounded-full bg-grad-primary px-6 py-3 font-semibold text-white shadow-glow hover:opacity-95">
           Start Free <ArrowRight className="h-4 w-4" />
         </a>
         <a href="#demo" className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-6 py-3 font-semibold text-foreground backdrop-blur hover:bg-card">
