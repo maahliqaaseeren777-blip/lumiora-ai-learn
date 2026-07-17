@@ -13,6 +13,14 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
+import { Route as AuthenticatedAppStatsRouteImport } from './routes/_authenticated/app.stats'
+import { Route as AuthenticatedAppSettingsRouteImport } from './routes/_authenticated/app.settings'
+import { Route as AuthenticatedAppQuizRouteImport } from './routes/_authenticated/app.quiz'
+import { Route as AuthenticatedAppPlanRouteImport } from './routes/_authenticated/app.plan'
+import { Route as AuthenticatedAppNotesRouteImport } from './routes/_authenticated/app.notes'
+import { Route as AuthenticatedAppMindmapRouteImport } from './routes/_authenticated/app.mindmap'
+import { Route as AuthenticatedAppFlashcardsRouteImport } from './routes/_authenticated/app.flashcards'
+import { Route as AuthenticatedAppChatRouteImport } from './routes/_authenticated/app.chat'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -33,30 +41,131 @@ const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   path: '/app',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAppStatsRoute = AuthenticatedAppStatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppSettingsRoute =
+  AuthenticatedAppSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppQuizRoute = AuthenticatedAppQuizRouteImport.update({
+  id: '/quiz',
+  path: '/quiz',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppPlanRoute = AuthenticatedAppPlanRouteImport.update({
+  id: '/plan',
+  path: '/plan',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppNotesRoute = AuthenticatedAppNotesRouteImport.update({
+  id: '/notes',
+  path: '/notes',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppMindmapRoute = AuthenticatedAppMindmapRouteImport.update({
+  id: '/mindmap',
+  path: '/mindmap',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppFlashcardsRoute =
+  AuthenticatedAppFlashcardsRouteImport.update({
+    id: '/flashcards',
+    path: '/flashcards',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppChatRoute = AuthenticatedAppChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/app': typeof AuthenticatedAppRoute
+  '/app': typeof AuthenticatedAppRouteWithChildren
+  '/app/chat': typeof AuthenticatedAppChatRoute
+  '/app/flashcards': typeof AuthenticatedAppFlashcardsRoute
+  '/app/mindmap': typeof AuthenticatedAppMindmapRoute
+  '/app/notes': typeof AuthenticatedAppNotesRoute
+  '/app/plan': typeof AuthenticatedAppPlanRoute
+  '/app/quiz': typeof AuthenticatedAppQuizRoute
+  '/app/settings': typeof AuthenticatedAppSettingsRoute
+  '/app/stats': typeof AuthenticatedAppStatsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/app': typeof AuthenticatedAppRoute
+  '/app': typeof AuthenticatedAppRouteWithChildren
+  '/app/chat': typeof AuthenticatedAppChatRoute
+  '/app/flashcards': typeof AuthenticatedAppFlashcardsRoute
+  '/app/mindmap': typeof AuthenticatedAppMindmapRoute
+  '/app/notes': typeof AuthenticatedAppNotesRoute
+  '/app/plan': typeof AuthenticatedAppPlanRoute
+  '/app/quiz': typeof AuthenticatedAppQuizRoute
+  '/app/settings': typeof AuthenticatedAppSettingsRoute
+  '/app/stats': typeof AuthenticatedAppStatsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_authenticated/app': typeof AuthenticatedAppRoute
+  '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
+  '/_authenticated/app/chat': typeof AuthenticatedAppChatRoute
+  '/_authenticated/app/flashcards': typeof AuthenticatedAppFlashcardsRoute
+  '/_authenticated/app/mindmap': typeof AuthenticatedAppMindmapRoute
+  '/_authenticated/app/notes': typeof AuthenticatedAppNotesRoute
+  '/_authenticated/app/plan': typeof AuthenticatedAppPlanRoute
+  '/_authenticated/app/quiz': typeof AuthenticatedAppQuizRoute
+  '/_authenticated/app/settings': typeof AuthenticatedAppSettingsRoute
+  '/_authenticated/app/stats': typeof AuthenticatedAppStatsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/app'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/app'
+    | '/app/chat'
+    | '/app/flashcards'
+    | '/app/mindmap'
+    | '/app/notes'
+    | '/app/plan'
+    | '/app/quiz'
+    | '/app/settings'
+    | '/app/stats'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/app'
-  id: '__root__' | '/' | '/_authenticated' | '/auth' | '/_authenticated/app'
+  to:
+    | '/'
+    | '/auth'
+    | '/app'
+    | '/app/chat'
+    | '/app/flashcards'
+    | '/app/mindmap'
+    | '/app/notes'
+    | '/app/plan'
+    | '/app/quiz'
+    | '/app/settings'
+    | '/app/stats'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/app'
+    | '/_authenticated/app/chat'
+    | '/_authenticated/app/flashcards'
+    | '/_authenticated/app/mindmap'
+    | '/_authenticated/app/notes'
+    | '/_authenticated/app/plan'
+    | '/_authenticated/app/quiz'
+    | '/_authenticated/app/settings'
+    | '/_authenticated/app/stats'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -95,15 +204,96 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/app/stats': {
+      id: '/_authenticated/app/stats'
+      path: '/stats'
+      fullPath: '/app/stats'
+      preLoaderRoute: typeof AuthenticatedAppStatsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/settings': {
+      id: '/_authenticated/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AuthenticatedAppSettingsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/quiz': {
+      id: '/_authenticated/app/quiz'
+      path: '/quiz'
+      fullPath: '/app/quiz'
+      preLoaderRoute: typeof AuthenticatedAppQuizRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/plan': {
+      id: '/_authenticated/app/plan'
+      path: '/plan'
+      fullPath: '/app/plan'
+      preLoaderRoute: typeof AuthenticatedAppPlanRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/notes': {
+      id: '/_authenticated/app/notes'
+      path: '/notes'
+      fullPath: '/app/notes'
+      preLoaderRoute: typeof AuthenticatedAppNotesRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/mindmap': {
+      id: '/_authenticated/app/mindmap'
+      path: '/mindmap'
+      fullPath: '/app/mindmap'
+      preLoaderRoute: typeof AuthenticatedAppMindmapRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/flashcards': {
+      id: '/_authenticated/app/flashcards'
+      path: '/flashcards'
+      fullPath: '/app/flashcards'
+      preLoaderRoute: typeof AuthenticatedAppFlashcardsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/chat': {
+      id: '/_authenticated/app/chat'
+      path: '/chat'
+      fullPath: '/app/chat'
+      preLoaderRoute: typeof AuthenticatedAppChatRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
   }
 }
 
+interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppChatRoute: typeof AuthenticatedAppChatRoute
+  AuthenticatedAppFlashcardsRoute: typeof AuthenticatedAppFlashcardsRoute
+  AuthenticatedAppMindmapRoute: typeof AuthenticatedAppMindmapRoute
+  AuthenticatedAppNotesRoute: typeof AuthenticatedAppNotesRoute
+  AuthenticatedAppPlanRoute: typeof AuthenticatedAppPlanRoute
+  AuthenticatedAppQuizRoute: typeof AuthenticatedAppQuizRoute
+  AuthenticatedAppSettingsRoute: typeof AuthenticatedAppSettingsRoute
+  AuthenticatedAppStatsRoute: typeof AuthenticatedAppStatsRoute
+}
+
+const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppChatRoute: AuthenticatedAppChatRoute,
+  AuthenticatedAppFlashcardsRoute: AuthenticatedAppFlashcardsRoute,
+  AuthenticatedAppMindmapRoute: AuthenticatedAppMindmapRoute,
+  AuthenticatedAppNotesRoute: AuthenticatedAppNotesRoute,
+  AuthenticatedAppPlanRoute: AuthenticatedAppPlanRoute,
+  AuthenticatedAppQuizRoute: AuthenticatedAppQuizRoute,
+  AuthenticatedAppSettingsRoute: AuthenticatedAppSettingsRoute,
+  AuthenticatedAppStatsRoute: AuthenticatedAppStatsRoute,
+}
+
+const AuthenticatedAppRouteWithChildren =
+  AuthenticatedAppRoute._addFileChildren(AuthenticatedAppRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAppRoute: typeof AuthenticatedAppRoute
+  AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAppRoute: AuthenticatedAppRoute,
+  AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =
