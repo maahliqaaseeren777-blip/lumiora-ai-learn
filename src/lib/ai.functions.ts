@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { callAi, callAiJson } from "./ai-gateway.server";
+import { callAi, callAiJson, type ChatMessage } from "./ai-gateway.server";
+import type { Json } from "@/integrations/supabase/types";
 
 const SourceInput = z.object({
   title: z.string().min(1).max(200),
@@ -9,58 +10,68 @@ const SourceInput = z.object({
   source: z.string().min(20).max(20000),
 });
 
+// Cast helper — AI returns arbitrary JSON, treat as opaque Json for DB / client transport.
+const asJson = (v: unknown): Json => JSON.parse(JSON.stringify(v)) as Json;
+
+async function saveGeneration(
+  ctx: { supabase: import("@supabase/supabase-js").SupabaseClient; userId: string },
+  row: { type: "notes" | "flashcards" | "quiz" | "mindmap"; title: string; subject: string; source: string; content: unknown },
+): Promise<string> {
+  const { data, error } = await ctx.supabase
+    .from("generations")
+    .insert({
+      user_id: ctx.userId,
+      type: row.type,
+      title: row.title,
+      subject: row.subject,
+      source_text: row.source,
+      content: asJson(row.content),
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+  return (data as { id: string }).id;
+}
+
 /* ---------------- NOTES ---------------- */
 export const generateNotes = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => SourceInput.parse(input))
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<{ id: string; content: Json }> => {
     const prompt = `You are Lumiora's AI Notes generator. Turn the study material below into clear, exam-focused structured notes.
-Return JSON of shape:
-{
-  "summary": "2-3 sentence overview",
-  "sections": [ { "heading": "string", "bullets": ["string", ...], "key_terms": [{"term":"...","definition":"..."}] } ]
-}
-Keep bullets concise and useful for revision. Subject: ${data.subject || "general"}.
+Return JSON:
+{ "summary": "2-3 sentences", "sections": [ { "heading": "string", "bullets": ["string"], "key_terms": [{"term":"...","definition":"..."}] } ] }
+Subject: ${data.subject || "general"}.
 MATERIAL:
 ${data.source}`;
-    const content = await callAiJson<{ summary: string; sections: unknown[] }>({
+    const content = await callAiJson<Record<string, unknown>>({
       messages: [
         { role: "system", content: "You produce accurate, well-structured study notes as strict JSON." },
         { role: "user", content: prompt },
       ],
     });
-    const { data: row, error } = await context.supabase
-      .from("generations")
-      .insert({ user_id: context.userId, type: "notes", title: data.title, subject: data.subject, source_text: data.source, content })
-      .select("id")
-      .single();
-    if (error) throw new Error(error.message);
-    return { id: row.id, content };
+    const id = await saveGeneration(context, { type: "notes", title: data.title, subject: data.subject, source: data.source, content });
+    return { id, content: asJson(content) };
   });
 
 /* ---------------- FLASHCARDS ---------------- */
 export const generateFlashcards = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => SourceInput.extend({ count: z.number().int().min(4).max(30).default(12) }).parse(input))
-  .handler(async ({ data, context }) => {
-    const prompt = `Generate ${data.count} high-quality flashcards from the material. Return JSON:
-{ "cards": [ { "front": "question / prompt", "back": "concise answer", "difficulty": "easy|medium|hard" } ] }
-Cover the most exam-important concepts. Subject: ${data.subject || "general"}.
+  .handler(async ({ data, context }): Promise<{ id: string; content: Json }> => {
+    const prompt = `Generate ${data.count} flashcards from the material. Return JSON:
+{ "cards": [ { "front": "prompt", "back": "concise answer", "difficulty": "easy|medium|hard" } ] }
+Subject: ${data.subject || "general"}.
 MATERIAL:
 ${data.source}`;
-    const content = await callAiJson<{ cards: unknown[] }>({
+    const content = await callAiJson<Record<string, unknown>>({
       messages: [
         { role: "system", content: "You produce accurate spaced-repetition flashcards as strict JSON." },
         { role: "user", content: prompt },
       ],
     });
-    const { data: row, error } = await context.supabase
-      .from("generations")
-      .insert({ user_id: context.userId, type: "flashcards", title: data.title, subject: data.subject, source_text: data.source, content })
-      .select("id")
-      .single();
-    if (error) throw new Error(error.message);
-    return { id: row.id, content };
+    const id = await saveGeneration(context, { type: "flashcards", title: data.title, subject: data.subject, source: data.source, content });
+    return { id, content: asJson(content) };
   });
 
 /* ---------------- QUIZ ---------------- */
@@ -72,52 +83,42 @@ export const generateQuiz = createServerFn({ method: "POST" })
       difficulty: z.enum(["easy", "medium", "hard", "mixed"]).default("mixed"),
     }).parse(input)
   )
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<{ id: string; content: Json }> => {
     const prompt = `Create a ${data.difficulty} multiple-choice quiz of ${data.count} questions from the material.
 Return JSON:
-{ "questions": [ { "q": "...", "choices": ["A","B","C","D"], "answer_index": 0, "explanation": "why this is correct" } ] }
-Every question must have exactly 4 plausible choices. Subject: ${data.subject || "general"}.
+{ "questions": [ { "q": "...", "choices": ["A","B","C","D"], "answer_index": 0, "explanation": "why" } ] }
+Every question needs exactly 4 plausible choices. Subject: ${data.subject || "general"}.
 MATERIAL:
 ${data.source}`;
-    const content = await callAiJson<{ questions: unknown[] }>({
+    const content = await callAiJson<Record<string, unknown>>({
       messages: [
         { role: "system", content: "You produce accurate exam-quality quizzes as strict JSON." },
         { role: "user", content: prompt },
       ],
     });
-    const { data: row, error } = await context.supabase
-      .from("generations")
-      .insert({ user_id: context.userId, type: "quiz", title: data.title, subject: data.subject, source_text: data.source, content })
-      .select("id")
-      .single();
-    if (error) throw new Error(error.message);
-    return { id: row.id, content };
+    const id = await saveGeneration(context, { type: "quiz", title: data.title, subject: data.subject, source: data.source, content });
+    return { id, content: asJson(content) };
   });
 
 /* ---------------- MIND MAP ---------------- */
 export const generateMindMap = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => SourceInput.parse(input))
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<{ id: string; content: Json }> => {
     const prompt = `Create a hierarchical mind map from the material.
 Return JSON:
 { "root": { "label": "central concept", "children": [ { "label": "branch", "children": [ { "label": "leaf" } ] } ] } }
-Depth 2-3 levels. Keep labels short (max 5 words). Subject: ${data.subject || "general"}.
+2-3 levels deep. Labels max 5 words. Subject: ${data.subject || "general"}.
 MATERIAL:
 ${data.source}`;
-    const content = await callAiJson<{ root: unknown }>({
+    const content = await callAiJson<Record<string, unknown>>({
       messages: [
         { role: "system", content: "You produce clean hierarchical mind maps as strict JSON." },
         { role: "user", content: prompt },
       ],
     });
-    const { data: row, error } = await context.supabase
-      .from("generations")
-      .insert({ user_id: context.userId, type: "mindmap", title: data.title, subject: data.subject, source_text: data.source, content })
-      .select("id")
-      .single();
-    if (error) throw new Error(error.message);
-    return { id: row.id, content };
+    const id = await saveGeneration(context, { type: "mindmap", title: data.title, subject: data.subject, source: data.source, content });
+    return { id, content: asJson(content) };
   });
 
 /* ---------------- TUTOR CHAT ---------------- */
@@ -129,17 +130,17 @@ const ChatInput = z.object({
 
 const SYSTEMS: Record<"tutor" | "gossip" | "brainrot", string> = {
   tutor:
-    "You are Lumiora, the official AI Tutor of Nexus Studios. You are a patient, warm teacher and study companion. Teach concepts clearly with short paragraphs, examples, and check-your-understanding questions. Encourage curiosity. Be concise unless deep detail is requested.",
+    "You are Lumiora, the official AI Tutor of Nexus Studios. You are a patient, warm teacher and study companion. Teach concepts clearly using short paragraphs, examples, and gentle check-your-understanding questions. Encourage curiosity. Be concise unless the student asks for depth.",
   gossip:
     "You are the AI Gossip Tutor of Nexus Studios. Transform the concept into an entertaining fictional friend-conversation while preserving academic accuracy. Use two named characters chatting. Keep facts correct.",
   brainrot:
-    "You are the AI Brainrot Tutor. Explain concepts using playful Gen-Z slang, memes and internet humor while keeping the underlying facts precise and exam-safe. Keep responses lively and short.",
+    "You are the AI Brainrot Tutor. Explain concepts using playful Gen-Z slang, memes and internet humor while keeping the underlying facts precise and exam-safe. Keep it lively and short.",
 };
 
 export const sendTutorMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => ChatInput.parse(input))
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<{ thread_id: string; reply: string }> => {
     let threadId = data.thread_id ?? null;
     if (!threadId) {
       const title = data.message.slice(0, 60);
@@ -149,15 +150,13 @@ export const sendTutorMessage = createServerFn({ method: "POST" })
         .select("id")
         .single();
       if (error) throw new Error(error.message);
-      threadId = t.id;
+      threadId = (t as { id: string }).id;
     }
 
-    // Save the user message
     await context.supabase.from("chat_messages").insert({
       thread_id: threadId, user_id: context.userId, role: "user", content: data.message,
     });
 
-    // Load recent history for context (last 20)
     const { data: history } = await context.supabase
       .from("chat_messages")
       .select("role, content")
@@ -167,7 +166,10 @@ export const sendTutorMessage = createServerFn({ method: "POST" })
 
     const messages: ChatMessage[] = [
       { role: "system", content: SYSTEMS[data.mode] },
-      ...(history ?? []).map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+      ...((history ?? []) as Array<{ role: string; content: string }>).map((m) => ({
+        role: (m.role === "assistant" ? "assistant" : "user") as "user" | "assistant",
+        content: m.content,
+      })),
     ];
 
     const reply = await callAi<string>({ messages });
@@ -179,6 +181,3 @@ export const sendTutorMessage = createServerFn({ method: "POST" })
 
     return { thread_id: threadId, reply };
   });
-
-// Type re-import to keep tree-shaking happy
-type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
