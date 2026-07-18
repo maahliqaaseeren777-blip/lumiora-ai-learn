@@ -2,7 +2,7 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   Sparkles, Home, MessageCircle, Pencil, Layers, ClipboardList, Brain,
-  Calendar, BarChart3, Settings, LogOut, Menu, X,
+  Calendar, BarChart3, Settings, LogOut, Menu, X, Mic, Zap, Coffee, FileText, Users, Shield,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -14,8 +14,14 @@ const NAV = [
   { to: "/app/flashcards", label: "Flashcards", icon: Layers },
   { to: "/app/quiz", label: "Quiz", icon: ClipboardList },
   { to: "/app/mindmap", label: "Mind Maps", icon: Brain },
+  { to: "/app/essay", label: "Essay Writer", icon: FileText },
+  { to: "/app/podcast", label: "Podcast", icon: Mic },
+  { to: "/app/brainrot", label: "Brainrot", icon: Zap },
+  { to: "/app/gossip", label: "Gossip", icon: Coffee },
   { to: "/app/plan", label: "Planner", icon: Calendar },
+  { to: "/app/community", label: "Community", icon: Users },
   { to: "/app/stats", label: "Stats", icon: BarChart3 },
+  { to: "/admin", label: "Admin", icon: Shield },
 ] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
