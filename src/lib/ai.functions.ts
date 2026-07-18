@@ -15,7 +15,7 @@ const asJson = (v: unknown): Json => JSON.parse(JSON.stringify(v)) as Json;
 
 async function saveGeneration(
   ctx: { supabase: import("@supabase/supabase-js").SupabaseClient; userId: string },
-  row: { type: "notes" | "flashcards" | "quiz" | "mindmap"; title: string; subject: string; source: string; content: unknown },
+  row: { type: "notes" | "flashcards" | "quiz" | "mindmap" | "essay" | "podcast" | "brainrot" | "gossip" | "summary"; title: string; subject: string; source: string; content: unknown },
 ): Promise<string> {
   const { data, error } = await ctx.supabase
     .from("generations")
