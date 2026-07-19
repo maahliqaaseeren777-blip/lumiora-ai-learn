@@ -5,24 +5,25 @@ import {
   Calendar, BarChart3, Settings, LogOut, Menu, X, Mic, Zap, Coffee, FileText, Users, Shield,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const NAV = [
-  { to: "/app", label: "Home", icon: Home },
-  { to: "/app/chat", label: "AI Tutor", icon: MessageCircle },
-  { to: "/app/notes", label: "Notes", icon: Pencil },
-  { to: "/app/flashcards", label: "Flashcards", icon: Layers },
-  { to: "/app/quiz", label: "Quiz", icon: ClipboardList },
-  { to: "/app/mindmap", label: "Mind Maps", icon: Brain },
-  { to: "/app/essay", label: "Essay Writer", icon: FileText },
-  { to: "/app/podcast", label: "Podcast", icon: Mic },
-  { to: "/app/brainrot", label: "Brainrot", icon: Zap },
-  { to: "/app/gossip", label: "Gossip", icon: Coffee },
-  { to: "/app/plan", label: "Planner", icon: Calendar },
-  { to: "/app/community", label: "Community", icon: Users },
-  { to: "/app/stats", label: "Stats", icon: BarChart3 },
-  { to: "/admin", label: "Admin", icon: Shield },
+  { to: "/app", label: "Home", icon: Home, adminOnly: false },
+  { to: "/app/chat", label: "AI Tutor", icon: MessageCircle, adminOnly: false },
+  { to: "/app/notes", label: "Notes", icon: Pencil, adminOnly: false },
+  { to: "/app/flashcards", label: "Flashcards", icon: Layers, adminOnly: false },
+  { to: "/app/quiz", label: "Quiz", icon: ClipboardList, adminOnly: false },
+  { to: "/app/mindmap", label: "Mind Maps", icon: Brain, adminOnly: false },
+  { to: "/app/essay", label: "Essay Writer", icon: FileText, adminOnly: false },
+  { to: "/app/podcast", label: "Podcast", icon: Mic, adminOnly: false },
+  { to: "/app/brainrot", label: "Brainrot", icon: Zap, adminOnly: false },
+  { to: "/app/gossip", label: "Gossip", icon: Coffee, adminOnly: false },
+  { to: "/app/plan", label: "Planner", icon: Calendar, adminOnly: false },
+  { to: "/app/community", label: "Community", icon: Users, adminOnly: false },
+  { to: "/app/stats", label: "Stats", icon: BarChart3, adminOnly: false },
+  { to: "/admin", label: "Admin", icon: Shield, adminOnly: true },
 ] as const;
+
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
