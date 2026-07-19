@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Shield, Users, Sparkles, Activity } from "lucide-react";
+import { Shield, Users, Sparkles, Activity, Lock } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin — Lumiora" }] }),
@@ -9,14 +9,41 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 function AdminPage() {
+  const roleQ = useQuery({
+    queryKey: ["is-admin"],
+    queryFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) return false;
+      const { data } = await supabase.rpc("has_role", { _user_id: u.user.id, _role: "admin" });
+      return !!data;
+    },
+  });
+
   const usersQ = useQuery({
     queryKey: ["admin-users"],
+    enabled: roleQ.data === true,
     queryFn: async () => (await supabase.from("profiles").select("id, display_name, created_at, xp, streak_days").order("created_at", { ascending: false }).limit(50)).data ?? [],
   });
   const gensQ = useQuery({
     queryKey: ["admin-gens-count"],
+    enabled: roleQ.data === true,
     queryFn: async () => (await supabase.from("generations").select("id", { count: "exact", head: true })).count ?? 0,
   });
+
+  if (roleQ.isLoading) {
+    return <div className="p-8 text-sm text-muted-foreground">Checking permissions…</div>;
+  }
+  if (roleQ.data === false) {
+    return (
+      <div className="mx-auto mt-16 max-w-md rounded-3xl border border-border/60 bg-card/60 p-8 text-center backdrop-blur">
+        <Lock className="mx-auto h-8 w-8 text-primary" />
+        <h1 className="mt-3 text-xl font-bold">Admin only</h1>
+        <p className="mt-2 text-sm text-muted-foreground">You don't have permission to view this page.</p>
+        <Link to="/app" className="mt-5 inline-flex rounded-full bg-grad-primary px-4 py-2 text-sm font-semibold text-white">Back to app</Link>
+      </div>
+    );
+  }
+
 
   return (
     <div>

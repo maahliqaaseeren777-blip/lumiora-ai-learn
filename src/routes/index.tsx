@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Sparkles, ArrowRight, Play, Star, Pencil, Layers, ClipboardList, Brain,
   FileText, BookOpen, GraduationCap, PenLine, Calendar, Zap, BookMarked, StarIcon,
@@ -8,6 +8,7 @@ import mascot from "@/assets/mascot.png";
 import dashboard from "@/assets/dashboard.jpg";
 
 export const Route = createFileRoute("/")({
+
   head: () => ({
     meta: [
       { property: "og:image", content: "https://lumiora.app/og-cover.jpg" },
@@ -57,8 +58,8 @@ function Nav() {
         <div className="flex items-center gap-1 md:gap-3">
           <a href="#pricing" className="hidden md:inline text-sm text-muted-foreground hover:text-foreground">Pricing</a>
           <a href="#features" className="hidden md:inline text-sm text-muted-foreground hover:text-foreground">Features</a>
-          <a href="/auth" className="text-sm px-3 py-2 text-muted-foreground hover:text-foreground">Login</a>
-          <a href="/auth" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-background hover:bg-white/90">Get Started</a>
+          <Link to="/auth" className="text-sm px-3 py-2 text-muted-foreground hover:text-foreground">Login</Link>
+          <Link to="/auth" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-background hover:bg-white/90">Get Started</Link>
         </div>
       </nav>
     </header>
@@ -80,9 +81,9 @@ function Hero() {
         Generate notes, flashcards, quizzes, mind maps, summaries and personalised study plans — in seconds.
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <a href="/auth" className="inline-flex items-center gap-2 rounded-full bg-grad-primary px-6 py-3 font-semibold text-white shadow-glow hover:opacity-95">
+        <Link to="/auth" className="inline-flex items-center gap-2 rounded-full bg-grad-primary px-6 py-3 font-semibold text-white shadow-glow hover:opacity-95">
           Start Free <ArrowRight className="h-4 w-4" />
-        </a>
+        </Link>
         <a href="#demo" className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-6 py-3 font-semibold text-foreground backdrop-blur hover:bg-card">
           <Play className="h-4 w-4 fill-current" /> Watch Demo
         </a>
