@@ -57,12 +57,25 @@ function Sidebar({ mobileOpen, onClose }: { mobileOpen: boolean; onClose: () => 
   const navigate = useNavigate();
   const qc = useQueryClient();
 
+  const isAdminQ = useQuery({
+    queryKey: ["is-admin"],
+    queryFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) return false;
+      const { data } = await supabase.rpc("has_role", { _user_id: u.user.id, _role: "admin" });
+      return !!data;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
   async function signOut() {
     await qc.cancelQueries();
     qc.clear();
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   }
+
+  const items = NAV.filter((n) => !n.adminOnly || isAdminQ.data === true);
 
   return (
     <>
@@ -74,8 +87,8 @@ function Sidebar({ mobileOpen, onClose }: { mobileOpen: boolean; onClose: () => 
           </span>
           <span className="font-extrabold tracking-widest text-sm">LUMIORA</span>
         </div>
-        <nav className="flex flex-col gap-1 p-3">
-          {NAV.map(({ to, label, icon: Icon }) => {
+        <nav className="flex flex-col gap-1 p-3 overflow-y-auto max-h-[calc(100vh-9rem)]">
+          {items.map(({ to, label, icon: Icon }) => {
             const active = pathname === to || (to !== "/app" && pathname.startsWith(to));
             return (
               <Link key={to} to={to} onClick={onClose}
@@ -87,6 +100,7 @@ function Sidebar({ mobileOpen, onClose }: { mobileOpen: boolean; onClose: () => 
             );
           })}
         </nav>
+
         <div className="absolute inset-x-0 bottom-0 border-t border-border/60 p-3">
           <Link to="/app/settings" onClick={onClose}
             className="mb-1 flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm text-muted-foreground hover:bg-card hover:text-foreground">
