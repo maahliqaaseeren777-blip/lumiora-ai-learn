@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Sparkles, ArrowRight, Play, Star, Pencil, Layers, ClipboardList, Brain,
   FileText, BookOpen, GraduationCap, PenLine, Calendar, Zap, BookMarked, StarIcon,
@@ -8,6 +8,7 @@ import mascot from "@/assets/mascot.png";
 import dashboard from "@/assets/dashboard.jpg";
 
 export const Route = createFileRoute("/")({
+
   head: () => ({
     meta: [
       { property: "og:image", content: "https://lumiora.app/og-cover.jpg" },
